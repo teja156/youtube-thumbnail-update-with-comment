@@ -17,7 +17,7 @@ import googleapiclient.errors
 import time
 import requests
 import shutil
-import discord_webhook
+# import discord_webhook
 
 from googleapiclient.http import MediaFileUpload
 
@@ -72,7 +72,7 @@ def get_comments():
 
 	except Exception as e:
 		print("Exception occured - %s"%e)
-		discord_webhook.send_msg(e)
+		# discord_webhook.send_msg(e)
 		return []
 
 
@@ -93,7 +93,7 @@ def check_eligibility(comment_data):
 		return True
 
 	except Exception as e:
-		discord_webhook.send_msg(e)
+		# discord_webhook.send_msg(e)
 		return False
 
 
@@ -200,7 +200,7 @@ def set_thumbnail():
 		print("thumbnail set at %s"%timestamp)
 	except Exception as e:
 		print("Exception occured - %s"%e)
-		discord_webhook.send_msg(e)
+		# discord_webhook.send_msg(e)
 
 
 
