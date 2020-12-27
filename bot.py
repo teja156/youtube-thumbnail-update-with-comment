@@ -18,6 +18,7 @@ import time
 import requests
 import shutil
 # import discord_webhook
+import random
 
 from googleapiclient.http import MediaFileUpload
 
@@ -49,12 +50,12 @@ def get_comments():
 	# DEVELOPER_KEY = os.getenv("GOOGLE_API_KEY")
 
 	try:
-		DEVELOPER_KEY = '' # Put your API key here
+		DEVELOPER_KEY = ''
 		youtube = googleapiclient.discovery.build(api_service_name, api_version, developerKey = DEVELOPER_KEY)
 
 		request = youtube.commentThreads().list(
 		    part="snippet",
-		    maxResults=100,
+		    maxResults=30,
 		    order="time",
 		    videoId=VIDEO_ID
 		)
@@ -72,7 +73,7 @@ def get_comments():
 
 	except Exception as e:
 		print("Exception occured - %s"%e)
-		# discord_webhook.send_msg(e)
+		# discord_webhook.send_msg(str(e))
 		return []
 
 
@@ -87,17 +88,18 @@ def check_eligibility(comment_data):
 		comment = comment_data[0]
 		author_name = comment_data[1]
 
-		if(len(comment)>320 or len(comment) < 8 or profanity.censor(comment)!=comment or profanity.censor(author_name)!=author_name):
+		if(len(comment)>320 or len(comment) < 10 or profanity.censor(comment)!=comment or profanity.censor(author_name)!=author_name or len(comment.split(' '))<6):
 			print("Comment rejected : %s"%comment)
 			return False
 		return True
 
 	except Exception as e:
-		# discord_webhook.send_msg(e)
+		# discord_webhook.send_msg(str(e))
 		return False
 
 
 def adjust_text(text):
+	text = text.strip()
 	split = 70
 	words = text.split(' ')
 	print(words)
@@ -155,15 +157,15 @@ def create_thumbnail(comment_data):
 	draw = ImageDraw.Draw(background)
 	font = ImageFont.truetype('Rubik-Medium.ttf', 30)
 	# 150,162 - > author name 
-	draw.text((150,162),author_name,(255, 255, 255), font=font)
+	draw.text((150,160),author_name,(255, 255, 255), font=font)
 	# 141,238 - > comment text
 	font2 = ImageFont.truetype('SourceSansPro-Regular.ttf', 35)
 	split = 80
 	text = adjust_text(text)
-	draw.text((150,238),text,(255, 255, 255), font=font2)
+	draw.text((150,210),text,(255, 255, 255), font=font2)
 	datetime_ist = datetime.now(IST)
 	timestamp = datetime_ist.strftime('%Y-%m-%d %H:%M:%S')
-	font3 = ImageFont.truetype('LuckiestGuy-Regular.ttf', 20)
+	font3 = ImageFont.truetype('Roboto-Medium.ttf', 27)
 	draw.text((520,682),timestamp,(255, 255, 255), font=font3)
 
 	background.save('thumbnail.jpg')
@@ -200,7 +202,7 @@ def set_thumbnail():
 		print("thumbnail set at %s"%timestamp)
 	except Exception as e:
 		print("Exception occured - %s"%e)
-		# discord_webhook.send_msg(e)
+		# discord_webhook.send_msg(str(e))
 
 
 
@@ -211,19 +213,37 @@ def start():
 	thumbnail = None
 	if(comments==[]):
 		return
-	for comment_data in comments:
-		comment = comment_data[0]
+	# for comment_data in comments:
+	# 	comment = comment_data[0]
+	# 	if(comment==PREVIOUS_COMMENT):
+	# 		continue
+
+		
+
+	# 	if(check_eligibility(comment_data)):
+	# 		#Approved
+	# 		thumbnail = create_thumbnail(comment_data)
+	# 		# thumbnail.save('thumbnail.jpg')
+	# 		print("Setting thumbnail with comment - %s"%comment)
+	# 		PREVIOUS_COMMENT = comment
+	# 		set_thumbnail()
+	# 		break
+
+	count = 0
+	while count<=30:
+		random_comment = random.choices(comments)[0]
+		comment = random_comment[0]
 		if(comment==PREVIOUS_COMMENT):
 			continue
-		if(check_eligibility(comment_data)):
+		if(check_eligibility(random_comment)):
 			#Approved
-			thumbnail = create_thumbnail(comment_data)
+			thumbnail = create_thumbnail(random_comment)
 			# thumbnail.save('thumbnail.jpg')
 			print("Setting thumbnail with comment - %s"%comment)
 			PREVIOUS_COMMENT = comment
 			set_thumbnail()
 			break
-
+		count+=1
 	
 
 
